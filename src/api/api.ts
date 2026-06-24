@@ -36,7 +36,7 @@ export interface ProductsListResponse {
 /* ---------------- CONFIG ---------------- */
 
 const BASE_URL =
-  import.meta.env.VITE_API_URL || "https://bixonlinestore.onrender.com/api";
+  import.meta.env.VITE_API_URL || "https://bixonlinestore.onrender.com";
 
 const TOKEN_KEY = "ml_admin_token";
 const ADMIN_KEY = "ml_admin_profile";
