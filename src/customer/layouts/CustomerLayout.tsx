@@ -12,9 +12,9 @@ const CustomerLayout: React.FC = () => {
         <Outlet />
       </main>
 
-      <footer className="border-t border-slate-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-8 text-sm text-slate-500 sm:px-6 lg:px-8">
-          <p className="font-semibold text-slate-700">{STORE_NAME}</p>
+      <footer className="border-t border-slate-200 bg-black">
+        <div className="mx-auto max-w-7xl px-4 py-8 text-sm text-gray-300 sm:px-6 lg:px-8">
+          <p className="font-semibold text-yellow-700">{STORE_NAME}</p>
           <p className="mt-1">
             Browse products and order instantly over WhatsApp — no account needed.
           </p>
