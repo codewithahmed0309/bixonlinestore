@@ -31,7 +31,7 @@ const Home: React.FC = () => {
   return (
     <div>
       {/* HERO */}
-      <section className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 text-white">
+      <section className="bg-gradient-to-br from-yellow-500 via-yellow-600 to-yellow-700 text-black">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
           <div className="max-w-2xl">
             <span className="inline-block rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
