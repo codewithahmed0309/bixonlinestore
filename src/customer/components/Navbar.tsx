@@ -16,7 +16,7 @@ const Navbar: React.FC = () => {
 
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     `text-sm font-medium transition-colors ${
-      isActive ? "text-emerald-600" : "text-slate-600 hover:text-slate-900"
+      isActive ? "text-yellow-600" : "text-slate-600 hover:text-slate-900"
     }`;
 
   return (
@@ -86,7 +86,7 @@ const Navbar: React.FC = () => {
                 className={({ isActive }) =>
                   `rounded-lg px-3 py-2 text-sm font-medium ${
                     isActive
-                      ? "bg-emerald-50 text-emerald-700"
+                      ? "bg-yellow-50 text-yellow-700"
                       : "text-slate-700 hover:bg-slate-50"
                   }`
                 }
