@@ -1,4 +1,4 @@
-export const STORE_NAME = "BIX SOLUTION";
+export const STORE_NAME = "RAHI STORE";
 
 /* Configurable WhatsApp number (international format, digits only, no + sign). */
 export const WHATSAPP_NUMBER: string =
