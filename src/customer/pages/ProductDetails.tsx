@@ -56,7 +56,7 @@ const ProductDetails: React.FC = () => {
         <p className="text-base font-medium text-slate-700">Product not found</p>
         <Link
           to="/products"
-          className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-emerald-600 hover:text-emerald-700"
+          className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-yellow-600 hover:text-yellow-700"
         >
           <ArrowLeftIcon width={16} height={16} /> Back to Products
         </Link>
@@ -105,7 +105,7 @@ const ProductDetails: React.FC = () => {
         {/* Info */}
         <div>
           {product.category && (
-            <span className="inline-block rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+            <span className="inline-block rounded-full bg-yellow-50 px-3 py-1 text-xs font-semibold text-yellow-700">
               {product.category}
             </span>
           )}
@@ -123,7 +123,7 @@ const ProductDetails: React.FC = () => {
 
           <p
             className={`mt-2 text-sm font-medium ${
-              inStock ? "text-emerald-600" : "text-rose-500"
+              inStock ? "text-yellow-600" : "text-rose-500"
             }`}
           >
             {inStock ? `${product.stock} in stock` : "Out of stock"}
@@ -169,7 +169,7 @@ const ProductDetails: React.FC = () => {
               type="button"
               onClick={handleBuyNow}
               disabled={!inStock}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-yellow-600 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-yellow-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <WhatsAppIcon width={18} height={18} />
               Buy Now
@@ -180,7 +180,7 @@ const ProductDetails: React.FC = () => {
               disabled={!inStock && !inCart}
               className={`inline-flex flex-1 items-center justify-center gap-2 rounded-lg border px-5 py-3 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
                 inCart
-                  ? "border-emerald-600 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                  ? "border-yellow-600 bg-yellow-50 text-yellow-700 hover:bg-yellow-100"
                   : "border-slate-300 bg-white text-slate-800 hover:bg-slate-50"
               }`}
             >
