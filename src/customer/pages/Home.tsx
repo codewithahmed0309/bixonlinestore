@@ -40,13 +40,15 @@ const Home: React.FC = () => {
               {STORE_NAME}
             </span>
             <h1 className="mt-5 text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-              Quality products, delivered with a simple message.
+              Tijarat mein Imandari, aur Zindagi mein B  arkat.
             </h1>
             <p className="mt-5 max-w-xl text-base text-yellow-50 sm:text-lg">
-              Browse our latest collection and order instantly over WhatsApp —
-              no account, no sign-up. Just pick what you love and check out in
-              seconds.
-            </p>
+  Sachcha aur imandaar Tajir Ambiya, Siddiqin aur Shohada ke saath hoga.
+  
+  <span className="block mt-2 text-sm text-yellow-200">
+     al-Tirmidhi 1209
+  </span>
+</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 to="/products"
