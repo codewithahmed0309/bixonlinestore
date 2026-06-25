@@ -23,12 +23,12 @@ export default function LoaderScreen() {
       
       {/* Spinner */}
       <div className="relative mb-6">
-        <div className="h-20 w-20 rounded-full border-4 border-emerald-500 border-t-transparent animate-spin"></div>
-        <div className="absolute inset-0 h-20 w-20 rounded-full bg-emerald-500 opacity-20 animate-ping"></div>
+        <div className="h-20 w-20 rounded-full border-4 border-yellow-500 border-t-transparent animate-spin"></div>
+        <div className="absolute inset-0 h-20 w-20 rounded-full bg-yellow-500 opacity-20 animate-ping"></div>
       </div>
 
       {/* Brand */}
-      <h1 className="text-3xl font-bold tracking-wide text-emerald-600">
+      <h1 className="text-3xl font-bold tracking-wide text-yellow-600">
         RAHI STORE
       </h1>
 
@@ -44,7 +44,7 @@ export default function LoaderScreen() {
 
       {/* Progress feel */}
       <div className="mt-6 h-1 w-48 overflow-hidden rounded bg-gray-200">
-        <div className="h-full w-1/2 bg-emerald-500 animate-pulse"></div>
+        <div className="h-full w-1/2 bg-yellow-500 animate-pulse"></div>
       </div>
     </div>
   );
