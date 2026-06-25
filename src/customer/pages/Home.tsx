@@ -33,7 +33,7 @@ const Home: React.FC = () => {
   return (
     <div>
       {/* HERO */}
-      <section className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 text-white">
+      <section className="bg-gradient-to-br from-yellow-600 via-yellow-700 to-teal-800 text-white">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
           <div className="max-w-2xl">
             <span className="inline-block rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
@@ -42,7 +42,7 @@ const Home: React.FC = () => {
             <h1 className="mt-5 text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
               Quality products, delivered with a simple message.
             </h1>
-            <p className="mt-5 max-w-xl text-base text-emerald-50 sm:text-lg">
+            <p className="mt-5 max-w-xl text-base text-yellow-50 sm:text-lg">
               Browse our latest collection and order instantly over WhatsApp —
               no account, no sign-up. Just pick what you love and check out in
               seconds.
@@ -50,7 +50,7 @@ const Home: React.FC = () => {
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 to="/products"
-                className="inline-flex items-center justify-center rounded-lg bg-white px-6 py-3 text-sm font-semibold text-emerald-700 shadow-sm transition-colors hover:bg-emerald-50"
+                className="inline-flex items-center justify-center rounded-lg bg-white px-6 py-3 text-sm font-semibold text-yellow-700 shadow-sm transition-colors hover:bg-yellow-50"
               >
                 Shop Now
               </Link>
@@ -78,7 +78,7 @@ const Home: React.FC = () => {
           </div>
           <Link
             to="/categories"
-            className="text-sm font-semibold text-emerald-600 hover:text-emerald-700"
+            className="text-sm font-semibold text-yellow-600 hover:text-yellow-700"
           >
             View all
           </Link>
@@ -104,7 +104,7 @@ const Home: React.FC = () => {
           </div>
           <Link
             to="/products"
-            className="text-sm font-semibold text-emerald-600 hover:text-emerald-700"
+            className="text-sm font-semibold text-yellow-600 hover:text-yellow-700"
           >
             View all
           </Link>
