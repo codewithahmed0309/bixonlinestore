@@ -5,6 +5,8 @@ import { DEMO_CATEGORIES } from "../data/categories";
 import { STORE_NAME } from "../config/store";
 import CategoryCard from "../components/CategoryCard";
 import ProductCard from "../components/ProductCard";
+import LoaderScreen from "../../components/LoaderScreen";
+
 
 const Home: React.FC = () => {
   const [featured, setFeatured] = useState<Product[]>([]);
@@ -31,7 +33,7 @@ const Home: React.FC = () => {
   return (
     <div>
       {/* HERO */}
-      <section className="bg-gradient-to-br from-yellow-500 via-yellow-600 to-yellow-700 text-black">
+      <section className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 text-white">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
           <div className="max-w-2xl">
             <span className="inline-block rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
@@ -109,7 +111,7 @@ const Home: React.FC = () => {
         </div>
 
         {loading ? (
-          <p className="mt-8 text-sm text-slate-500">Loading products…</p>
+          <LoaderScreen />
         ) : featured.length === 0 ? (
           <p className="mt-8 text-sm text-slate-500">
             No products available yet. Please check back soon.
