@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { Product, productsApi } from "../../api/api";
 import { DEMO_CATEGORIES } from "../data/categories";
 import ProductCard from "../components/ProductCard";
-
+import LoaderScreen from "../../components/LoaderScreen";
 const normalize = (value?: string) =>
   (value || "").toLowerCase().replace(/[\s_-]+/g, "");
 
@@ -72,7 +72,7 @@ const Products: React.FC = () => {
           onClick={() => setCategory("")}
           className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
             !activeCategory
-              ? "bg-yellow-600 text-white"
+              ? "bg-emerald-600 text-white"
               : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
           }`}
         >
@@ -85,7 +85,7 @@ const Products: React.FC = () => {
             onClick={() => setCategory(c.slug)}
             className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
               activeCategory === c.slug
-                ? "bg-yellow-600 text-white"
+                ? "bg-emerald-600 text-white"
                 : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
             }`}
           >
@@ -96,7 +96,7 @@ const Products: React.FC = () => {
 
       {/* Grid */}
       {loading ? (
-        <p className="mt-10 text-sm text-slate-500">Loading products…</p>
+         <LoaderScreen />
       ) : error ? (
         <p className="mt-10 text-sm text-rose-500">{error}</p>
       ) : filtered.length === 0 ? (
