@@ -40,7 +40,7 @@ const Home: React.FC = () => {
               {STORE_NAME}
             </span>
             <h1 className="mt-5 text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-              Tijarat mein Imandari, aur Zindagi mein B  arkat.
+              Tijarat mein Imandari, aur Zindagi mein Barkat.
             </h1>
             <p className="mt-5 max-w-xl text-base text-yellow-50 sm:text-lg">
   Sachcha aur imandaar Tajir Ambiya, Siddiqin aur Shohada ke saath hoga.
