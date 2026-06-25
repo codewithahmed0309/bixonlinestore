@@ -1,3 +1,7 @@
+console.log("SUPABASE URL:", process.env.SUPABASE_URL);
+console.log("🔥 SERVER BOOTING...");
+console.log("PORT:", process.env.PORT);
+console.log("SUPABASE:", process.env.SUPABASE_URL);
 import './config/env.js'
 import express from 'express'
 import cors from 'cors'
@@ -6,7 +10,7 @@ import morgan from 'morgan'
 
 import productRoutes from './routes/productRoutes.js'
 import authRoutes from './routes/authRoutes.js'
-
+import categoryRoutes from './routes/categoryRoutes.js'
 const app = express()
 
 app.set('etag', false)
@@ -20,6 +24,7 @@ app.use(morgan('dev'))
 // routes
 app.use('/api/products', productRoutes)
 app.use('/api/auth', authRoutes)
+app.use('/api/categories', categoryRoutes)
 
 // test route
 app.get('/', (req, res) => {
@@ -49,4 +54,8 @@ const PORT = process.env.PORT || 10000
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
+})
+app.use((req, res, next) => {
+  console.log("➡️", req.method, req.url)
+  next()
 })
