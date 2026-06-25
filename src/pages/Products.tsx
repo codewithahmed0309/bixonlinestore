@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useProducts } from "../contexts/ProductsContext";
-
+import { categoriesApi, Category } from "../api/CategoryApi"; // 🔥 separate file — adjust path to wherever you save it
 type FormState = {
   name: string;
   brand: string;
@@ -33,6 +33,86 @@ const Products: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
 
+  /* =========================================================
+     🔥 CATEGORY MANAGEMENT ADDITIONS — STATE
+  ========================================================= */
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
+  const [categoryError, setCategoryError] = useState<string | null>(null);
+
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [showDeleteCategoryModal, setShowDeleteCategoryModal] = useState(false);
+  const [isSavingCategory, setIsSavingCategory] = useState(false);
+  const [isDeletingCategoryId, setIsDeletingCategoryId] = useState<string | null>(null);
+
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [useCustomCategory, setUseCustomCategory] = useState(false);
+
+  /* =========================================================
+     🔥 CATEGORY MANAGEMENT ADDITIONS — API CALLS
+     (Self-contained fetch calls so nothing in ProductsContext
+      has to be touched. Can be migrated into a CategoriesContext
+      later if you want, see chat notes.)
+  ========================================================= */
+  const fetchCategories = async () => {
+    setCategoriesLoading(true);
+    setCategoryError(null);
+    try {
+      const res = await categoriesApi.list();
+      setCategories(Array.isArray(res.data?.data) ? res.data.data : []);
+    } catch (err: any) {
+      console.error("Failed to load categories:", err);
+      setCategoryError(err?.message || "Failed to load categories.");
+    } finally {
+      setCategoriesLoading(false);
+    }
+  };
+
+  const createCategory = async () => {
+    if (!newCategoryName.trim()) {
+      setCategoryError("Category name is required.");
+      return;
+    }
+    setIsSavingCategory(true);
+    setCategoryError(null);
+    try {
+      await categoriesApi.create(newCategoryName.trim());
+      await fetchCategories();
+      setNewCategoryName("");
+      setShowCategoryModal(false);
+      setSuccessMessage("Category added successfully!");
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err: any) {
+      console.error("Failed to create category:", err);
+      setCategoryError(err?.message || "Failed to create category.");
+    } finally {
+      setIsSavingCategory(false);
+    }
+  };
+
+  const deleteCategory = async (id: string, name: string) => {
+    if (!window.confirm(`Delete category "${name}"? Products already using it will keep the name as plain text, but it will disappear from this dropdown.`)) {
+      return;
+    }
+    setIsDeletingCategoryId(id);
+    setCategoryError(null);
+    try {
+      await categoriesApi.remove(id);
+      await fetchCategories();
+      setSuccessMessage("Category deleted successfully!");
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err: any) {
+      console.error("Failed to delete category:", err);
+      setCategoryError(err?.message || "Failed to delete category.");
+    } finally {
+      setIsDeletingCategoryId(null);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
   useEffect(() => {
     fetchProducts(); // no-op if Dashboard already loaded fresh data
   }, [fetchProducts]);
@@ -42,16 +122,29 @@ const Products: React.FC = () => {
     [products]
   );
 
+  /* =========================================================
+     🔥 CATEGORY MANAGEMENT ADDITIONS — MERGE WITH EXISTING
+     Original categoryOptions (derived from products) is kept
+     exactly as-is and merged with the fetched category list so
+     the filter dropdown still works even if a product has a
+     category that hasn't (yet) been formally registered.
+  ========================================================= */
   const categoryOptions = useMemo(
     () => [...new Set(products.map((p) => p.category).filter(Boolean))].sort() as string[],
     [products]
   );
+
+  const mergedCategoryOptions = useMemo(() => {
+    const fromApi = categories.map((c) => c.name);
+    return [...new Set([...categoryOptions, ...fromApi])].sort();
+  }, [categoryOptions, categories]);
 
   const resetForm = () => {
     setForm(emptyForm);
     setEditingId(null);
     setFormError(null);
     setSuccessMessage(null);
+    setUseCustomCategory(false);
   };
 
   const validateForm = (): string | null => {
@@ -125,6 +218,10 @@ const Products: React.FC = () => {
     setShowForm(true);
     setFormError(null);
     setSuccessMessage(null);
+    // if the product's category isn't in our known list, fall back to custom input
+    setUseCustomCategory(
+      !!product.category && !mergedCategoryOptions.includes(product.category)
+    );
   };
 
   const handleDelete = async (id: string, name: string) => {
@@ -150,7 +247,7 @@ const Products: React.FC = () => {
     return matchesQuery && matchesBrand && matchesCategory;
   });
 
-  const displayError = formError || contextError;
+  const displayError = formError || contextError || categoryError;
 
   return (
     <div className="space-y-5">
@@ -160,17 +257,48 @@ const Products: React.FC = () => {
           <p className="text-slate-500 text-sm mt-1">{products.length} total products</p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => {
-            resetForm();
-            setShowForm(true);
-          }}
-          disabled={isSubmitting}
-          className="px-4 py-2.5 bg-amber-500 text-black rounded-lg text-sm font-medium hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition w-full sm:w-auto"
-        >
-          + Add Product
-        </button>
+        {/* ===== Buttons row: original Add Product button + NEW category buttons beside it ===== */}
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+          <button
+            type="button"
+            onClick={() => {
+              resetForm();
+              setShowForm(true);
+            }}
+            disabled={isSubmitting}
+            className="px-4 py-2.5 bg-amber-500 text-black rounded-lg text-sm font-medium hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition w-full sm:w-auto"
+          >
+            + Add Product
+          </button>
+
+          {/* 🔥 NEW: Add Category — same sizing/shape pattern as Add Product, different accent color */}
+          <button
+            type="button"
+            onClick={() => {
+              setNewCategoryName("");
+              setCategoryError(null);
+              setShowCategoryModal(true);
+            }}
+            disabled={isSubmitting}
+            className="px-4 py-2.5 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition w-full sm:w-auto"
+          >
+            + Add Category
+          </button>
+
+          {/* 🔥 NEW: Delete Category — opens a picker/delete modal */}
+          <button
+            type="button"
+            onClick={() => {
+              setCategoryError(null);
+              setShowDeleteCategoryModal(true);
+            }}
+            disabled={isSubmitting || categories.length === 0}
+            className="px-4 py-2.5 bg-rose-500 text-white rounded-lg text-sm font-medium hover:bg-rose-600 disabled:opacity-50 disabled:cursor-not-allowed transition w-full sm:w-auto"
+            title={categories.length === 0 ? "No categories yet" : "Delete a category"}
+          >
+            Delete Category
+          </button>
+        </div>
       </div>
 
       {/* FILTER BAR — stacks on mobile, row on larger screens */}
@@ -197,7 +325,8 @@ const Products: React.FC = () => {
           className="rounded-lg bg-slate-900 border border-slate-700 px-3 py-2.5 text-sm text-slate-100"
         >
           <option value="">All categories</option>
-          {categoryOptions.map((category) => (
+          {/* 🔥 UPDATED to use mergedCategoryOptions (products + API categories) instead of only categoryOptions */}
+          {mergedCategoryOptions.map((category) => (
             <option key={category} value={category}>{category}</option>
           ))}
         </select>
@@ -237,13 +366,53 @@ const Products: React.FC = () => {
             onChange={(e) => setForm({ ...form, brand: e.target.value })}
             className="w-full p-3 bg-slate-800 border border-slate-700 rounded text-slate-100 placeholder-slate-500 focus:border-amber-500 focus:outline-none text-sm"
           />
-          <input
-            type="text"
-            placeholder="Category"
-            value={form.category}
-            onChange={(e) => setForm({ ...form, category: e.target.value })}
-            className="w-full p-3 bg-slate-800 border border-slate-700 rounded text-slate-100 placeholder-slate-500 focus:border-amber-500 focus:outline-none text-sm"
-          />
+
+          {/* 🔥 UPDATED category field: dropdown sourced from categories API,
+              with a "custom" fallback that reveals the ORIGINAL text input
+              unchanged below it. Nothing from before was removed — the
+              plain text input still exists and still works the same way. */}
+          {!useCustomCategory ? (
+            <select
+              value={form.category}
+              onChange={(e) => {
+                if (e.target.value === "__custom__") {
+                  setUseCustomCategory(true);
+                  setForm({ ...form, category: "" });
+                } else {
+                  setForm({ ...form, category: e.target.value });
+                }
+              }}
+              className="w-full p-3 bg-slate-800 border border-slate-700 rounded text-slate-100 focus:border-amber-500 focus:outline-none text-sm"
+            >
+              <option value="">
+                {categoriesLoading ? "Loading categories..." : "Select Category"}
+              </option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.name}>{cat.name}</option>
+              ))}
+              <option value="__custom__">+ Type a custom category…</option>
+            </select>
+          ) : (
+            <div className="space-y-1">
+              <input
+                type="text"
+                placeholder="Category"
+                value={form.category}
+                onChange={(e) => setForm({ ...form, category: e.target.value })}
+                className="w-full p-3 bg-slate-800 border border-slate-700 rounded text-slate-100 placeholder-slate-500 focus:border-amber-500 focus:outline-none text-sm"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  setUseCustomCategory(false);
+                  setForm({ ...form, category: "" });
+                }}
+                className="text-xs text-amber-400 hover:underline"
+              >
+                ← Choose from existing categories instead
+              </button>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-3">
             <input
@@ -302,6 +471,102 @@ const Products: React.FC = () => {
               className="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-100 px-4 py-3 rounded font-medium transition disabled:opacity-50 text-sm"
             >
               Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================
+          🔥 NEW: ADD CATEGORY MODAL
+      ========================================================= */}
+      {showCategoryModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-900 border border-slate-700 p-4 rounded-xl w-full max-w-sm space-y-3">
+            <h3 className="text-slate-200 font-medium">Add New Category</h3>
+            <input
+              type="text"
+              autoFocus
+              placeholder="Category name *"
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              className="w-full p-3 bg-slate-800 border border-slate-700 rounded text-slate-100 placeholder-slate-500 focus:border-amber-500 focus:outline-none text-sm"
+            />
+            {categoryError && (
+              <p className="text-xs text-rose-400">{categoryError}</p>
+            )}
+            <div className="flex gap-2 pt-1">
+              <button
+                type="button"
+                onClick={createCategory}
+                disabled={isSavingCategory}
+                className="flex-1 bg-green-500 hover:bg-green-600 text-white px-4 py-2.5 rounded font-medium transition disabled:opacity-50 text-sm"
+              >
+                {isSavingCategory ? "Saving..." : "Save"}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCategoryModal(false);
+                  setNewCategoryName("");
+                  setCategoryError(null);
+                }}
+                disabled={isSavingCategory}
+                className="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-100 px-4 py-2.5 rounded font-medium transition disabled:opacity-50 text-sm"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================
+          🔥 NEW: DELETE CATEGORY MODAL
+          (list categories, delete with confirm — no nested edit state needed)
+      ========================================================= */}
+      {showDeleteCategoryModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-900 border border-slate-700 p-4 rounded-xl w-full max-w-sm space-y-3">
+            <h3 className="text-slate-200 font-medium">Delete Category</h3>
+
+            {categoryError && (
+              <p className="text-xs text-rose-400">{categoryError}</p>
+            )}
+
+            <div className="space-y-2 max-h-60 overflow-y-auto">
+              {categoriesLoading ? (
+                <p className="text-sm text-slate-500">⏳ Loading...</p>
+              ) : categories.length === 0 ? (
+                <p className="text-sm text-slate-500">No categories left.</p>
+              ) : (
+                categories.map((cat) => (
+                  <div
+                    key={cat.id}
+                    className="flex items-center justify-between px-3 py-2 rounded bg-slate-800 text-slate-100 text-sm"
+                  >
+                    <span className="truncate">{cat.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => deleteCategory(cat.id, cat.name)}
+                      disabled={isDeletingCategoryId === cat.id}
+                      className="ml-3 px-2 py-1 text-xs rounded bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 disabled:opacity-50 shrink-0"
+                    >
+                      {isDeletingCategoryId === cat.id ? "Deleting..." : "Delete"}
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setShowDeleteCategoryModal(false);
+                setCategoryError(null);
+              }}
+              className="w-full bg-slate-700 hover:bg-slate-600 text-slate-100 px-4 py-2.5 rounded font-medium transition text-sm"
+            >
+              Close
             </button>
           </div>
         </div>
