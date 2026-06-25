@@ -1,91 +1,147 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Product, productsApi } from "../../api/api";
-import { DEMO_CATEGORIES } from "../data/categories";
+import { categoriesApi } from "../../api/CategoryApi";
 import ProductCard from "../components/ProductCard";
 import LoaderScreen from "../../components/LoaderScreen";
+
+// -----------------------------
+// Types
+// -----------------------------
+type UI_Category = {
+  id: string;
+  name: string;
+  slug: string;
+};
+
+// -----------------------------
+// Utils
+// -----------------------------
 const normalize = (value?: string) =>
   (value || "").toLowerCase().replace(/[\s_-]+/g, "");
 
-const matchesCategory = (product: Product, slug: string): boolean => {
-  if (!slug) return true;
-  const category = DEMO_CATEGORIES.find((c) => c.slug === slug);
-  const target = normalize(slug);
-  const targetName = normalize(category?.name);
-  const productCat = normalize(product.category);
-  return productCat === target || productCat === targetName;
-};
-
+// -----------------------------
+// Component
+// -----------------------------
 const Products: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeCategory = searchParams.get("category") || "";
 
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<UI_Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // -----------------------------
+  // Fetch products + categories
+  // -----------------------------
   useEffect(() => {
     let mounted = true;
+
     setLoading(true);
-    productsApi
-      .list()
-      .then((res) => {
-        if (mounted) {
-          setProducts(res.data?.data || []);
-          setError(null);
-        }
+
+    Promise.all([productsApi.list(), categoriesApi.list()])
+      .then(([productsRes, categoriesRes]) => {
+        if (!mounted) return;
+
+        // PRODUCTS
+        setProducts(productsRes.data?.data || []);
+
+        // CATEGORIES → convert API data into UI format (slug fix)
+        const rawCategories = categoriesRes.data?.data || [];
+
+        const formattedCategories: UI_Category[] = rawCategories.map(
+          (c: any) => ({
+            id: c.id,
+            name: c.name,
+            slug: normalize(c.name), // 🔥 FIX: generate slug safely
+          })
+        );
+
+        setCategories(formattedCategories);
+
+        setError(null);
       })
       .catch(() => {
-        if (mounted) setError("Could not load products. Please try again.");
+        if (mounted) {
+          setError("Could not load products. Please try again.");
+        }
       })
       .finally(() => {
         if (mounted) setLoading(false);
       });
+
     return () => {
       mounted = false;
     };
   }, []);
 
-  const filtered = useMemo(
-    () => products.filter((p) => matchesCategory(p, activeCategory)),
-    [products, activeCategory]
-  );
+  // -----------------------------
+  // Filter logic
+  // -----------------------------
+  const filtered = useMemo(() => {
+    if (!activeCategory) return products;
 
+    const target = normalize(activeCategory);
+
+    return products.filter((p) => {
+      const productCategory = normalize(p.category);
+
+      if (productCategory === target) return true;
+
+      const matchedCategory = categories.find(
+        (c) => c.slug === target
+      );
+
+      if (!matchedCategory) return false;
+
+      return productCategory === normalize(matchedCategory.name);
+    });
+  }, [products, categories, activeCategory]);
+
+  // -----------------------------
+  // Change category
+  // -----------------------------
   const setCategory = (slug: string) => {
     if (slug) setSearchParams({ category: slug });
     else setSearchParams({});
   };
 
+  // -----------------------------
+  // UI
+  // -----------------------------
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <h1 className="text-3xl font-bold text-slate-900">Products</h1>
+
       <p className="mt-1 text-sm text-slate-500">
         {activeCategory
           ? `Showing ${filtered.length} product(s) in this category`
           : "Explore our full collection"}
       </p>
 
-      {/* Category filter */}
+      {/* CATEGORY FILTER */}
       <div className="mt-6 flex flex-wrap gap-2">
         <button
           type="button"
           onClick={() => setCategory("")}
           className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
             !activeCategory
-              ? "bg-yellow-600 text-white"
+              ? "bg-emerald-600 text-white"
               : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
           }`}
         >
           All
         </button>
-        {DEMO_CATEGORIES.map((c) => (
+
+        {categories.map((c) => (
           <button
-            key={c.slug}
+            key={c.id}
             type="button"
             onClick={() => setCategory(c.slug)}
             className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
               activeCategory === c.slug
-                ? "bg-yellow-600 text-white"
+                ? "bg-emerald-600 text-white"
                 : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
             }`}
           >
@@ -94,9 +150,9 @@ const Products: React.FC = () => {
         ))}
       </div>
 
-      {/* Grid */}
+      {/* CONTENT */}
       {loading ? (
-         <LoaderScreen />
+        <LoaderScreen />
       ) : error ? (
         <p className="mt-10 text-sm text-rose-500">{error}</p>
       ) : filtered.length === 0 ? (
