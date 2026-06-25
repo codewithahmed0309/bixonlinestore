@@ -72,7 +72,7 @@ const Products: React.FC = () => {
           onClick={() => setCategory("")}
           className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
             !activeCategory
-              ? "bg-emerald-600 text-white"
+              ? "bg-yellow-600 text-white"
               : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
           }`}
         >
@@ -85,7 +85,7 @@ const Products: React.FC = () => {
             onClick={() => setCategory(c.slug)}
             className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
               activeCategory === c.slug
-                ? "bg-emerald-600 text-white"
+                ? "bg-yellow-600 text-white"
                 : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
             }`}
           >
