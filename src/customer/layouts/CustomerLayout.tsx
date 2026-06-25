@@ -19,7 +19,10 @@ const CustomerLayout: React.FC = () => {
       <footer className="border-t border-slate-200 bg-white">
         <div className="mx-auto max-w-7xl px-4 py-8 text-sm text-slate-500 sm:px-6 lg:px-8">
 
-          <p className="font-semibold text-slate-700">{STORE_NAME}</p>
+          {/* STORE NAME */}
+          <h2 className="font-semibold text-slate-800 text-base">
+            {STORE_NAME}
+          </h2>
 
           <p className="mt-1">
             Browse products and order instantly over WhatsApp — no account needed.
@@ -34,17 +37,17 @@ const CustomerLayout: React.FC = () => {
           {/* CONTACT */}
           <a
             href="https://wa.me/917276626991"
-            className="text-yellow-600 font-medium block mt-3"
             target="_blank"
             rel="noreferrer"
+            className="text-yellow-600 font-medium block mt-3 hover:underline"
           >
-            +91 72766 26991 (WhatsApp)
+            +91 72766 26991
           </a>
 
           {/* RESELLER BUTTON */}
           <button
             onClick={() => setOpen(true)}
-            className="mt-4 bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700"
+            className="mt-4 bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition"
           >
             Become a Reseller
           </button>
@@ -55,7 +58,7 @@ const CustomerLayout: React.FC = () => {
         </div>
       </footer>
 
-      {/* MODAL HERE */}
+      {/* MODAL */}
       <ResellerApplicationModal
         open={open}
         onClose={() => setOpen(false)}
