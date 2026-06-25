@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { STORE_NAME } from "../config/store";
-import ResellerApplicationModal from "../components/reseller/ResellerApplicationModal";
+import ResellerApplicationModal from "../../components/reseller/ResellerApplicationModal";
 
 const CustomerLayout: React.FC = () => {
   const [open, setOpen] = useState(false);
