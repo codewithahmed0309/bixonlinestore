@@ -17,7 +17,6 @@ import Products from "../pages/Products";
 
 import CustomerLayout from "../customer/layouts/CustomerLayout";
 import Home from "../customer/pages/Home";
-import Categories from "../customer/pages/Categories";
 import CustomerProducts from "../customer/pages/Products";
 import ProductDetails from "../customer/pages/ProductDetails";
 import Cart from "../customer/pages/Cart";
@@ -39,7 +38,7 @@ const AppRouter: React.FC = () => {
             {/* ---------------- CUSTOMER STOREFRONT ---------------- */}
             <Route element={<CustomerLayout />}>
               <Route path="/" element={<Home />} />
-              <Route path="/categories" element={<Categories />} />
+              {/* <Route path="/categories" element={<Categories />} /> */}
               <Route path="/products" element={<CustomerProducts />} />
               <Route path="/products/:id" element={<ProductDetails />} />
               <Route path="/cart" element={<Cart />} />
