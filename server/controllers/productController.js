@@ -198,6 +198,7 @@ export const updateProduct = async (req, res) => {
       original_price,
       sale_price,
       stock,
+      removedImages, // 🔥 NEW: optional JSON-stringified array of image URLs to remove
     } = req.body;
 
     /* ---------- Get Existing Product ---------- */
@@ -265,12 +266,29 @@ export const updateProduct = async (req, res) => {
       });
     }
 
-    /* ---------- Images ---------- */
+    /* ---------- Images: REMOVE then MERGE (not overwrite) ---------- */
 
+    // 1. Start from whatever the product already has saved.
     let imageUrls = existingProduct.images || [];
 
+    // 2. If the client asked to remove specific existing images, drop them first.
+    if (removedImages) {
+      try {
+        const toRemove = JSON.parse(removedImages);
+        if (Array.isArray(toRemove) && toRemove.length) {
+          imageUrls = imageUrls.filter((url) => !toRemove.includes(url));
+        }
+      } catch (e) {
+        console.warn("Could not parse removedImages:", e.message);
+      }
+    }
+
+    // 3. Upload any newly selected files and APPEND them to what's left.
+    //    🔥 THIS IS THE CORE FIX: previously this REPLACED imageUrls entirely,
+    //    wiping out existing images on every edit. Now it appends.
     if (req.files?.length) {
-      imageUrls = await uploadImagesToCloudinary(req.files);
+      const newImageUrls = await uploadImagesToCloudinary(req.files);
+      imageUrls = [...imageUrls, ...newImageUrls];
     }
 
     /* ---------- Update Object ---------- */
