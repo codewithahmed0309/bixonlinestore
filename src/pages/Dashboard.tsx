@@ -53,7 +53,7 @@ const Dashboard: React.FC = () => {
         />
         <StatCard
           label="Inventory Value"
-          value={isLoading ? "…" : `₹. ${totalValue.toLocaleString()}`}
+          value={isLoading ? "…" : `₹ ${totalValue.toLocaleString()}`}
         />
       </div>
 
@@ -71,7 +71,7 @@ const Dashboard: React.FC = () => {
             {products.slice(0, 5).map((p) => (
               <li key={p.id} className="py-3 flex items-center justify-between text-sm gap-3">
                 <span className="text-slate-200 truncate">{p.name}</span>
-                <span className="text-slate-500 shrink-0">₹. {p.price?.toLocaleString()}</span>
+                <span className="text-slate-500 shrink-0">₹ {p.price?.toLocaleString()}</span>
               </li>
             ))}
           </ul>
