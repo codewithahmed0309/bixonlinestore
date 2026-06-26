@@ -57,7 +57,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
       {/* CONTENT */}
       <div className="flex flex-1 flex-col p-4">
         <Link to={`/products/${product.id}`}>
-          <h3 className="line-clamp-2 text-sm font-semibold text-slate-900 hover:text-emerald-600">
+          <h3 className="line-clamp-2 text-sm font-semibold text-slate-900 hover:text-yellow-600">
             {product.name}
           </h3>
         </Link>
@@ -84,7 +84,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
 
           <span
             className={`text-xs font-medium ${
-              inStock ? "text-emerald-600" : "text-rose-500"
+              inStock ? "text-yellow-600" : "text-rose-500"
             }`}
           >
             {inStock ? `${product.stock} in stock` : "Out of stock"}
@@ -97,7 +97,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
             type="button"
             onClick={handleBuyNow}
             disabled={!inStock}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-yellow-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-yellow-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <WhatsAppIcon width={16} height={16} />
             Buy Now
@@ -109,7 +109,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
             disabled={!inStock && !inCart}
             className={`inline-flex items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
               inCart
-                ? "border-emerald-600 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                ? "border-yellow-600 bg-yellow-50 text-yellow-700 hover:bg-yellow-100"
                 : "border-slate-300 bg-white text-slate-800 hover:bg-slate-50"
             }`}
           >
