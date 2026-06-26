@@ -21,6 +21,13 @@ const ProductDetails: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
 
+  /* =========================================================
+     🔥 GALLERY STATE
+     activeIndex tracks which image is shown in the main viewer.
+     Reset to 0 whenever the product changes (new id loaded).
+  ========================================================= */
+  const [activeIndex, setActiveIndex] = useState(0);
+
   useEffect(() => {
     let mounted = true;
     setLoading(true);
@@ -30,6 +37,7 @@ const ProductDetails: React.FC = () => {
         if (!mounted) return;
         const found = (res.data?.data || []).find((p) => p.id === id) || null;
         setProduct(found);
+        setActiveIndex(0); // reset gallery position for the newly loaded product
       })
       .catch(() => mounted && setProduct(null))
       .finally(() => mounted && setLoading(false));
@@ -38,9 +46,24 @@ const ProductDetails: React.FC = () => {
     };
   }, [id]);
 
+  const images = useMemo(
+    () => (product?.images && product.images.length > 0 ? product.images : []),
+    [product]
+  );
+
   const inStock = useMemo(() => Number(product?.stock) > 0, [product]);
   const inCart = product ? isInCart(product.id) : false;
   const maxQty = Number(product?.stock) || 1;
+
+  const goToPrev = () => {
+    if (images.length === 0) return;
+    setActiveIndex((i) => (i === 0 ? images.length - 1 : i - 1));
+  };
+
+  const goToNext = () => {
+    if (images.length === 0) return;
+    setActiveIndex((i) => (i === images.length - 1 ? 0 : i + 1));
+  };
 
   if (loading) {
     return (
@@ -85,21 +108,81 @@ const ProductDetails: React.FC = () => {
       </Link>
 
       <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-2">
-        {/* Image */}
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-          <div className="aspect-square w-full bg-slate-100">
-            {product.images && product.images.length > 0 ? (
-              <img
-                src={product.images[0]}
-                alt={product.name}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-slate-300">
-                <CartIcon width={64} height={64} />
-              </div>
+        {/* ===========================================================
+            🔥 GALLERY — main viewer + arrows + thumbnail strip
+        =========================================================== */}
+        <div>
+          <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white">
+            <div className="aspect-square w-full bg-slate-100">
+              {images.length > 0 ? (
+                <img
+                  src={images[activeIndex]}
+                  alt={`${product.name} - image ${activeIndex + 1}`}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-slate-300">
+                  <CartIcon width={64} height={64} />
+                </div>
+              )}
+            </div>
+
+            {/* Prev / Next arrows — only show when there's more than 1 image */}
+            {images.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  aria-label="Previous image"
+                  onClick={goToPrev}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-md ring-1 ring-slate-200 transition hover:bg-white"
+                >
+                  <ArrowLeftIcon width={18} height={18} />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Next image"
+                  onClick={goToNext}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-md ring-1 ring-slate-200 transition hover:bg-white"
+                >
+                  <ArrowLeftIcon
+                    width={18}
+                    height={18}
+                    className="rotate-180"
+                  />
+                </button>
+
+                {/* Image counter badge, e.g. "2 / 5" */}
+                <div className="absolute bottom-3 right-3 rounded-full bg-black/60 px-2.5 py-1 text-xs font-medium text-white">
+                  {activeIndex + 1} / {images.length}
+                </div>
+              </>
             )}
           </div>
+
+          {/* Thumbnail strip — only show when there's more than 1 image */}
+          {images.length > 1 && (
+            <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+              {images.map((img, idx) => (
+                <button
+                  key={img + idx}
+                  type="button"
+                  onClick={() => setActiveIndex(idx)}
+                  aria-label={`View image ${idx + 1}`}
+                  className={`shrink-0 overflow-hidden rounded-lg border-2 transition ${
+                    idx === activeIndex
+                      ? "border-emerald-600"
+                      : "border-transparent hover:border-slate-300"
+                  }`}
+                >
+                  <img
+                    src={img}
+                    alt={`${product.name} thumbnail ${idx + 1}`}
+                    className="h-16 w-16 object-cover sm:h-20 sm:w-20"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Info */}
