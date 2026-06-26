@@ -110,7 +110,7 @@ const Products: React.FC = () => {
           onClick={() => setSearchParams({})}
           className={`rounded-full px-4 py-1.5 text-sm font-medium ${
             !activeCategory
-              ? "bg-emerald-600 text-white"
+              ? "bg-yellow-600 text-white"
               : "bg-white text-slate-700 ring-1 ring-slate-200"
           }`}
         >
@@ -123,7 +123,7 @@ const Products: React.FC = () => {
             onClick={() => setSearchParams({ category: c.slug })}
             className={`rounded-full px-4 py-1.5 text-sm font-medium ${
               activeCategory === c.slug
-                ? "bg-emerald-600 text-white"
+                ? "bg-yellow-600 text-white"
                 : "bg-white text-slate-700 ring-1 ring-slate-200"
             }`}
           >
