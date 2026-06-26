@@ -504,7 +504,7 @@ const buildFormData = (): FormData => {
 />
             <span className="text-lg">📤</span>
             <span className="mt-1 text-sm font-medium">
-              {editingId ? "Replace Image (optional)" : "Upload Image"}
+              {editingId ? "Add Image (optional)" : "Upload Image"}
             </span>
            {form.images.length > 0 ? (
   <div className="text-xs mt-1 text-green-400">
