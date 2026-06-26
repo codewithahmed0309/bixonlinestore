@@ -22,12 +22,17 @@ router.get("/", asyncHandler(getProducts));
 router.post(
   "/create",
   auth,
-  upload.single("image"),
+  upload.array("images", 5),
   asyncHandler(createProduct)
 );
 
 /* ---------------- UPDATE PRODUCT (PROTECTED) ---------------- */
-router.put("/:id", auth, upload.single("image"), asyncHandler(updateProduct));
+router.put(
+  "/:id",
+  auth,
+  upload.array("images", 5),
+  asyncHandler(updateProduct)
+);
 
 /* ---------------- DELETE PRODUCT (PROTECTED) ---------------- */
 router.delete("/:id", auth, asyncHandler(deleteProduct));
