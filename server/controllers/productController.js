@@ -7,39 +7,67 @@ import crypto from "crypto";
    CREATE PRODUCT (with duplicate prevention)
    ============================================ */
 export const createProduct = async (req, res) => {
-  try {
-    const { name, brand, category, price, stock } = req.body;
+  try {const {
+  name,
+  brand,
+  category,
+  original_price,
+  sale_price,
+  stock,
+} = req.body;
 
     // ✅ STEP 1: VALIDATE ALL INPUTS FIRST (before any async work)
     if (!name || !name.trim()) {
       return res.status(400).json({ message: "Product name is required" });
     }
-    if (!price || isNaN(price) || price <= 0) {
-      return res.status(400).json({ message: "Invalid price" });
-    }
+   if (
+  original_price === undefined ||
+  isNaN(original_price) ||
+  Number(original_price) <= 0
+) {
+  return res.status(400).json({
+    message: "Invalid original price",
+  });
+}
+
+if (
+  sale_price === undefined ||
+  isNaN(sale_price) ||
+  Number(sale_price) <= 0
+) {
+  return res.status(400).json({
+    message: "Invalid sale price",
+  });
+}
+
+if (Number(sale_price) > Number(original_price)) {
+  return res.status(400).json({
+    message: "Sale price cannot exceed original price",
+  });
+}
     if (stock === undefined || isNaN(stock) || stock < 0) {
       return res.status(400).json({ message: "Invalid stock count" });
     }
 
     // Validate file size (should already be caught by multer, but double-check)
-    if (req.file && req.file.size > 5 * 1024 * 1024) {
-      return res.status(400).json({ message: "File must be under 5MB" });
+    if (req.files && req.files.size > 3 * 1024 * 1024) {
+      return res.status(400).json({ message: "File must be under 3MB" });
     }
 
     // ✅ STEP 2: UPLOAD IMAGE TO CLOUDINARY (if provided)
     // Use idempotency key in public_id to prevent duplicate uploads
     let imageUrl = null;
-    if (req.file) {
+    if (req.files) {
       try {
         // Generate idempotency key based on file hash
         const fileHash = crypto
           .createHash("md5")
-          .update(req.file.buffer)
+          .update(req.files.buffer)
           .digest("hex");
         const publicId = `products/${fileHash}`;
 
         // Stream buffer to Cloudinary (more efficient than creating temp file)
-        const stream = Readable.from(req.file.buffer);
+        const stream = Readable.from(req.files.buffer);
         const uploadResult = await new Promise((resolve, reject) => {
           const upload = cloudinary.uploader.upload_stream(
             { public_id: publicId, folder: "products", overwrite: false },
@@ -167,15 +195,15 @@ export const updateProduct = async (req, res) => {
     if (stock !== undefined) updateData.stock = Number(stock);
 
     // Handle image upload if provided
-    if (req.file) {
+    if (req.files) {
       try {
         const fileHash = crypto
           .createHash("md5")
-          .update(req.file.buffer)
+          .update(req.files.buffer)
           .digest("hex");
         const publicId = `products/${fileHash}`;
 
-        const stream = Readable.from(req.file.buffer);
+        const stream = Readable.from(req.files.buffer);
         const uploadResult = await new Promise((resolve, reject) => {
           const upload = cloudinary.uploader.upload_stream(
             { public_id: publicId, folder: "products", overwrite: true },
