@@ -41,7 +41,7 @@ const Cart: React.FC = () => {
         </p>
         <Link
           to="/products"
-          className="mt-6 inline-flex items-center justify-center rounded-lg bg-emerald-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-700"
+          className="mt-6 inline-flex items-center justify-center rounded-lg bg-yellow-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-yellow-700"
         >
           Browse Products
         </Link>
@@ -83,7 +83,7 @@ const Cart: React.FC = () => {
                   <div className="flex items-start justify-between gap-2">
                     <Link
                       to={`/products/${item.id}`}
-                      className="text-sm font-semibold text-slate-900 hover:text-emerald-600"
+                      className="text-sm font-semibold text-slate-900 hover:text-yellow-600"
                     >
                       {item.name}
                     </Link>
@@ -164,7 +164,7 @@ const Cart: React.FC = () => {
             <button
               type="button"
               onClick={handleProceed}
-              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-700"
+              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-yellow-600 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-yellow-700"
             >
               <WhatsAppIcon width={18} height={18} />
               Proceed
