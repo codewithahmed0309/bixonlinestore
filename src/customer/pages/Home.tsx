@@ -67,31 +67,7 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* CATEGORIES */}
-      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="flex items-end justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-slate-900">
-              Shop by Category
-            </h2>
-            <p className="mt-1 text-sm text-slate-500">
-              Find exactly what you need
-            </p>
-          </div>
-          <Link
-            to="/categories"
-            className="text-sm font-semibold text-yellow-600 hover:text-yellow-700"
-          >
-            View all
-          </Link>
-        </div>
-
-        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {DEMO_CATEGORIES.map((c) => (
-            <CategoryCard key={c.slug} category={c} />
-          ))}
-        </div>
-      </section>
+      
 
       {/* FEATURED PRODUCTS */}
       <section className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
