@@ -1,12 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Product, productsApi } from "../../api/api";
-import { DEMO_CATEGORIES } from "../data/categories";
 import { STORE_NAME } from "../config/store";
-import CategoryCard from "../components/CategoryCard";
 import ProductCard from "../components/ProductCard";
 import LoaderScreen from "../../components/LoaderScreen";
-
 
 const Home: React.FC = () => {
   const [featured, setFeatured] = useState<Product[]>([]);
@@ -14,17 +11,25 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     let mounted = true;
+
     productsApi
       .list()
       .then((res) => {
-        if (mounted) setFeatured((res.data?.data || []).slice(0, 4));
+        if (mounted) {
+          setFeatured((res.data?.data || []).slice(0, 4));
+        }
       })
       .catch(() => {
-        if (mounted) setFeatured([]);
+        if (mounted) {
+          setFeatured([]);
+        }
       })
       .finally(() => {
-        if (mounted) setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       });
+
     return () => {
       mounted = false;
     };
@@ -39,16 +44,19 @@ const Home: React.FC = () => {
             <span className="inline-block rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
               {STORE_NAME}
             </span>
+
             <h1 className="mt-5 text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
               Tijarat mein Imandari, aur Zindagi mein Barkat.
             </h1>
+
             <p className="mt-5 max-w-xl text-base text-yellow-50 sm:text-lg">
-  Sachcha aur imandaar Tajir Ambiya, Siddiqin aur Shohada ke saath hoga.
-  
-  <span className="block mt-2 text-sm text-yellow-200">
-     al-Tirmidhi 1209
-  </span>
-</p>
+              Sachcha aur imandaar Tajir Ambiya, Siddiqin aur Shohada ke saath
+              hoga.
+              <span className="block mt-2 text-sm text-yellow-200">
+                al-Tirmidhi 1209
+              </span>
+            </p>
+
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 to="/products"
@@ -56,18 +64,17 @@ const Home: React.FC = () => {
               >
                 Shop Now
               </Link>
+
               <Link
-                to="/categories"
+                to="/products"
                 className="inline-flex items-center justify-center rounded-lg border border-white/40 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10"
               >
-                Browse Categories
+                Explore Products
               </Link>
             </div>
           </div>
         </div>
       </section>
-
-      
 
       {/* FEATURED PRODUCTS */}
       <section className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
@@ -80,6 +87,7 @@ const Home: React.FC = () => {
               Fresh from our store
             </p>
           </div>
+
           <Link
             to="/products"
             className="text-sm font-semibold text-yellow-600 hover:text-yellow-700"
@@ -96,8 +104,8 @@ const Home: React.FC = () => {
           </p>
         ) : (
           <div className="mt-8 grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
-            {featured.map((p) => (
-              <ProductCard key={p.id} product={p} />
+            {featured.map((product) => (
+              <ProductCard key={product.id} product={product} />
             ))}
           </div>
         )}
