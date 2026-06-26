@@ -75,7 +75,7 @@ const Login: React.FC = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@mubaraklaptops.com"
+                placeholder="Eg:bixsolutions.com"
                 autoComplete="username"
                 className="w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 outline-none focus:border-amber-400/60 focus:ring-1 focus:ring-amber-400/40"
               />
