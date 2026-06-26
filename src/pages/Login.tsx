@@ -45,12 +45,15 @@ const Login: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4">
       <div className="w-full max-w-sm">
         <div className="flex items-center gap-2 justify-center mb-8">
-          <div className="h-10 w-10 rounded-lg bg-amber-400 flex items-center justify-center font-bold text-slate-900">
-            BIX
-          </div>
-          <span className="text-slate-100 font-semibold text-lg">
-            Solutions
-          </span>
+          <img
+  src="/logo.jpeg"
+  alt="RAHI STORE"
+  className="h-12 w-auto"
+/>
+
+<span className="text-slate-100 font-semibold text-lg">
+  RAHI STORE
+</span>
         </div>
 
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-xl">
