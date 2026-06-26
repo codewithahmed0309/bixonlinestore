@@ -6,7 +6,6 @@ import { CartIcon, MenuIcon } from "./icons";
 
 const navItems = [
   { to: "/", label: "Home", end: true },
-  { to: "/categories", label: "Categories", end: false },
   { to: "/products", label: "Products", end: false },
 ];
 
