@@ -27,12 +27,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           md:static md:translate-x-0
           ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <div className="flex items-center gap-2 px-5 h-16 border-b border-slate-800 shrink-0">
-          <div className="h-9 w-9 rounded-lg bg-amber-400 flex items-center justify-center font-bold text-slate-900">
-            BIX
-          </div>
-          <span className="text-slate-100 font-semibold">Solutions</span>
-        </div>
+       <div className="flex items-center gap-3 px-5 h-16 border-b border-slate-800 shrink-0">
+  <img
+    src="/logo.jpeg"
+    alt="RAHI STORE"
+    className="h-10 w-auto rounded-md"
+  />
+  <span className="text-slate-100 font-semibold text-lg">
+    RAHI STORE
+  </span>
+</div>
 
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {navItems.map((item) => (
