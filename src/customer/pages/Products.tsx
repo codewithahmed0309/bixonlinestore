@@ -32,9 +32,6 @@ const Products: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // -----------------------------
-  // Fetch products + categories
-  // -----------------------------
   useEffect(() => {
     let mounted = true;
 
@@ -47,19 +44,18 @@ const Products: React.FC = () => {
         // PRODUCTS
         setProducts(productsRes.data?.data || []);
 
-        // CATEGORIES → convert API data into UI format (slug fix)
+        // CATEGORIES
         const rawCategories = categoriesRes.data?.data || [];
 
         const formattedCategories: UI_Category[] = rawCategories.map(
           (c: any) => ({
             id: c.id,
             name: c.name,
-            slug: normalize(c.name), // 🔥 FIX: generate slug safely
+            slug: normalize(c.name),
           })
         );
 
         setCategories(formattedCategories);
-
         setError(null);
       })
       .catch(() => {
@@ -87,25 +83,13 @@ const Products: React.FC = () => {
     return products.filter((p) => {
       const productCategory = normalize(p.category);
 
-      if (productCategory === target) return true;
-
-      const matchedCategory = categories.find(
-        (c) => c.slug === target
-      );
+      const matchedCategory = categories.find((c) => c.slug === target);
 
       if (!matchedCategory) return false;
 
       return productCategory === normalize(matchedCategory.name);
     });
   }, [products, categories, activeCategory]);
-
-  // -----------------------------
-  // Change category
-  // -----------------------------
-  const setCategory = (slug: string) => {
-    if (slug) setSearchParams({ category: slug });
-    else setSearchParams({});
-  };
 
   // -----------------------------
   // UI
@@ -123,12 +107,11 @@ const Products: React.FC = () => {
       {/* CATEGORY FILTER */}
       <div className="mt-6 flex flex-wrap gap-2">
         <button
-          type="button"
-          onClick={() => setCategory("")}
-          className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+          onClick={() => setSearchParams({})}
+          className={`rounded-full px-4 py-1.5 text-sm font-medium ${
             !activeCategory
               ? "bg-emerald-600 text-white"
-              : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
+              : "bg-white text-slate-700 ring-1 ring-slate-200"
           }`}
         >
           All
@@ -137,12 +120,11 @@ const Products: React.FC = () => {
         {categories.map((c) => (
           <button
             key={c.id}
-            type="button"
-            onClick={() => setCategory(c.slug)}
-            className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+            onClick={() => setSearchParams({ category: c.slug })}
+            className={`rounded-full px-4 py-1.5 text-sm font-medium ${
               activeCategory === c.slug
                 ? "bg-emerald-600 text-white"
-                : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
+                : "bg-white text-slate-700 ring-1 ring-slate-200"
             }`}
           >
             {c.name}
@@ -160,11 +142,6 @@ const Products: React.FC = () => {
           <p className="text-base font-medium text-slate-700">
             No products found
           </p>
-          <p className="mt-1 text-sm text-slate-500">
-            {activeCategory
-              ? "There are no products in this category yet."
-              : "Products added in the admin panel will appear here automatically."}
-          </p>
         </div>
       ) : (
         <div className="mt-8 grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
@@ -177,4 +154,4 @@ const Products: React.FC = () => {
   );
 };
 
-export default Products;
+export default Products;  
