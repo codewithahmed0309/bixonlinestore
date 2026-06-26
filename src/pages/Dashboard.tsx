@@ -29,11 +29,11 @@ const Dashboard: React.FC = () => {
   return (
     <div className="space-y-5 sm:space-y-6">
       <div>
-        <h2 className="text-slate-100 text-lg sm:text-xl font-semibold">
-          Welcome back, {admin?.email || "Admin"}
-        </h2>
+      <h2 className="text-slate-100 text-lg sm:text-xl font-semibold">
+   RAHI STORE Admin Panel
+</h2>
         <p className="text-slate-500 text-sm mt-1">
-          Here's what's happening with your inventory today.
+          Manage your products, inventory, and reseller business 
         </p>
       </div>
 
@@ -53,7 +53,7 @@ const Dashboard: React.FC = () => {
         />
         <StatCard
           label="Inventory Value"
-          value={isLoading ? "…" : `Rs. ${totalValue.toLocaleString()}`}
+          value={isLoading ? "…" : `₹. ${totalValue.toLocaleString()}`}
         />
       </div>
 
@@ -64,14 +64,14 @@ const Dashboard: React.FC = () => {
           <p className="text-sm text-slate-500">Loading…</p>
         ) : products.length === 0 ? (
           <p className="text-sm text-slate-500">
-            No products yet. Add your first product to see it here.
+            No products have been added yet. Start by adding your first product to the store.
           </p>
         ) : (
           <ul className="divide-y divide-slate-800">
             {products.slice(0, 5).map((p) => (
               <li key={p.id} className="py-3 flex items-center justify-between text-sm gap-3">
                 <span className="text-slate-200 truncate">{p.name}</span>
-                <span className="text-slate-500 shrink-0">Rs. {p.price?.toLocaleString()}</span>
+                <span className="text-slate-500 shrink-0">₹. {p.price?.toLocaleString()}</span>
               </li>
             ))}
           </ul>
