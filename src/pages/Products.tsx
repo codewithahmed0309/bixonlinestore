@@ -5,18 +5,20 @@ type FormState = {
   name: string;
   brand: string;
   category: string;
-  price: string;
+  original_price: string;
+  sale_price: string;
   stock: string;
-  image: File | null;
+  images: File[];
 };
 
 const emptyForm: FormState = {
   name: "",
   brand: "",
   category: "",
-  price: "",
+  original_price: "",
+  sale_price: "",
   stock: "",
-  image: null,
+  images: [],
 };
 
 const Products: React.FC = () => {
@@ -97,8 +99,13 @@ const Products: React.FC = () => {
     setIsDeletingCategoryId(id);
     setCategoryError(null);
     try {
-      await categoriesApi.remove(id);
-      await fetchCategories();
+      setCategories((prev) => prev.filter((c) => c.id !== id));
+
+try {
+  await categoriesApi.remove(id);
+} catch (err) {
+  await fetchCategories(); // rollback sync
+}
       setSuccessMessage("Category deleted successfully!");
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err: any) {
@@ -148,25 +155,53 @@ const Products: React.FC = () => {
   };
 
   const validateForm = (): string | null => {
-    if (!form.name.trim()) return "Product name is required.";
-    if (!form.price || isNaN(Number(form.price)) || Number(form.price) <= 0)
-      return "Enter a valid price greater than 0.";
-    if (!form.stock || isNaN(Number(form.stock)) || Number(form.stock) < 0)
-      return "Enter a valid stock count (0 or more).";
-    if (form.image && form.image.size > 5 * 1024 * 1024) return "Image must be under 5MB.";
-    return null;
-  };
+  if (!form.name.trim()) return "Product name is required.";
 
-  const buildFormData = (): FormData => {
-    const data = new FormData();
-    data.append("name", form.name.trim());
-    data.append("brand", form.brand.trim() || "");
-    data.append("category", form.category.trim() || "");
-    data.append("price", String(Number(form.price)));
-    data.append("stock", String(Number(form.stock)));
-    if (form.image) data.append("image", form.image);
-    return data;
-  };
+  if (
+    !form.original_price ||
+    isNaN(Number(form.original_price)) ||
+    Number(form.original_price) <= 0
+  )
+    return "Enter a valid original price greater than 0.";
+
+  if (
+    !form.sale_price ||
+    isNaN(Number(form.sale_price)) ||
+    Number(form.sale_price) <= 0
+  )
+    return "Enter a valid sale price greater than 0.";
+
+  if (Number(form.sale_price) > Number(form.original_price)) {
+    return "Sale price cannot be greater than original price.";
+  }
+
+  if (!form.stock || isNaN(Number(form.stock)) || Number(form.stock) < 0)
+    return "Enter a valid stock count (0 or more).";
+
+  if (form.images.some((file) => file.size > 3 * 1024 * 1024))
+    return "Each image must be under 3MB.";
+
+  return null;
+};
+const buildFormData = (): FormData => {
+  const data = new FormData();
+
+  data.append("name", form.name.trim());
+  data.append("brand", form.brand.trim() || "");
+  data.append("category", form.category.trim() || "");
+  data.append("original_price", form.original_price);
+  data.append("sale_price", form.sale_price);
+  data.append("stock", String(Number(form.stock)));
+
+  // ✅ ONLY SEND IF USER SELECTED NEW IMAGES
+  if (form.images.length > 0) {
+    form.images.forEach((file) => {
+      data.append("images", file);
+    });
+  }
+
+  return data;
+};
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -206,14 +241,18 @@ const Products: React.FC = () => {
   };
 
   const handleEdit = (product: (typeof products)[number]) => {
+    const originalPrice = String((product as any).original_price ?? "");
+    const salePrice = String((product as any).sale_price ?? "");
+
     setEditingId(product.id);
     setForm({
       name: product.name || "",
       brand: product.brand || "",
       category: product.category || "",
-      price: String(product.price ?? ""),
+      original_price: originalPrice,
+      sale_price: salePrice,
       stock: String(product.stock ?? ""),
-      image: null,
+      images: [],
     });
     setShowForm(true);
     setFormError(null);
@@ -415,15 +454,31 @@ const Products: React.FC = () => {
           )}
 
           <div className="grid grid-cols-2 gap-3">
-            <input
-              type="number"
-              placeholder="Price *"
-              value={form.price}
-              onChange={(e) => setForm({ ...form, price: e.target.value })}
-              min="0"
-              step="0.01"
-              className="w-full p-3 bg-slate-800 border border-slate-700 rounded text-slate-100 placeholder-slate-500 focus:border-amber-500 focus:outline-none text-sm"
-            />
+            <div className="grid grid-cols-2 gap-3">
+  <input
+    type="number"
+    placeholder="Original Price *"
+    value={form.original_price}
+    onChange={(e) =>
+      setForm({ ...form, original_price: e.target.value })
+    }
+    min="0"
+    step="0.01"
+    className="w-full p-3 bg-slate-800 border border-slate-700 rounded text-slate-100 text-sm"
+  />
+
+  <input
+    type="number"
+    placeholder="Sale Price *"
+    value={form.sale_price}
+    onChange={(e) =>
+      setForm({ ...form, sale_price: e.target.value })
+    }
+    min="0"
+    step="0.01"
+    className="w-full p-3 bg-slate-800 border border-slate-700 rounded text-slate-100 text-sm"
+  />
+</div>
             <input
               type="number"
               placeholder="Stock *"
@@ -436,20 +491,28 @@ const Products: React.FC = () => {
 
           <label className="border-2 border-dashed border-slate-600 rounded-lg flex flex-col items-center justify-center p-4 cursor-pointer text-slate-400 hover:border-amber-500 transition">
             <input
-              type="file"
-              accept="image/png, image/jpeg"
-              className="hidden"
-              onChange={(e) => setForm({ ...form, image: e.target.files?.[0] || null })}
-            />
+  type="file"
+  accept="image/png, image/jpeg"
+  multiple
+  className="hidden"
+  onChange={(e) =>
+    setForm({
+      ...form,
+      images: Array.from(e.target.files || []),
+    })
+  }
+/>
             <span className="text-lg">📤</span>
             <span className="mt-1 text-sm font-medium">
               {editingId ? "Replace Image (optional)" : "Upload Image"}
             </span>
-            {form.image ? (
-              <span className="text-xs mt-1 text-green-400">✓ {form.image.name}</span>
-            ) : (
-              <span className="text-xs mt-1">PNG, JPG (max 5MB)</span>
-            )}
+           {form.images.length > 0 ? (
+  <div className="text-xs mt-1 text-green-400">
+    ✓ {form.images.length} image(s) selected
+  </div>
+) : (
+  <span className="text-xs mt-1">PNG, JPG (max 3MB each)</span>
+)}
           </label>
 
           <div className="flex flex-col sm:flex-row gap-2 pt-2">
@@ -601,8 +664,8 @@ const Products: React.FC = () => {
                 <tr key={p.id} className="hover:bg-slate-800/40 transition">
                   <td className="px-5 py-3 text-slate-100">
                     <div className="flex items-center gap-3">
-                      {p.image ? (
-                        <img src={p.image} alt={p.name} className="w-8 h-8 rounded object-cover border border-slate-700" />
+                      {p.images && p.images.length > 0 ? (
+                        <img src={p.images[0]} alt={p.name} className="w-8 h-8 rounded object-cover border border-slate-700" />
                       ) : (
                         <div className="w-8 h-8 rounded bg-slate-800 border border-slate-700" />
                       )}
@@ -611,7 +674,15 @@ const Products: React.FC = () => {
                   </td>
                   <td className="px-5 py-3 text-slate-400">{p.brand || "—"}</td>
                   <td className="px-5 py-3 text-slate-400">{p.category || "—"}</td>
-                  <td className="px-5 py-3 text-right text-slate-100 font-medium">Rs {Number(p.price).toFixed(2)}</td>
+                  <td className="px-5 py-3 text-right text-slate-100 font-medium">
+                    <div className="text-right text-slate-100 font-medium">
+    
+  {typeof (p as any).original_price !== "undefined" && (p as any).original_price !== null && (
+    <div className="text-xs text-slate-500 line-through">
+      Rs {Number((p as any).original_price).toFixed(2)}
+    </div>
+  )}
+</div></td>
                   <td className="px-5 py-3 text-right text-slate-100">{p.stock}</td>
                   <td className="px-5 py-3 text-right">
                     <div className="flex justify-end gap-2">
@@ -640,8 +711,8 @@ const Products: React.FC = () => {
           filtered.map((p) => (
             <div key={p.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
               <div className="flex items-start gap-3">
-                {p.image ? (
-                  <img src={p.image} alt={p.name} className="w-12 h-12 rounded-lg object-cover border border-slate-700 shrink-0" />
+                {p.images && p.images.length > 0 ? (
+                  <img src={p.images[0]} alt={p.name} className="w-12 h-12 rounded-lg object-cover border border-slate-700 shrink-0" />
                 ) : (
                   <div className="w-12 h-12 rounded-lg bg-slate-800 border border-slate-700 shrink-0" />
                 )}
@@ -653,10 +724,17 @@ const Products: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between mt-3 text-sm">
-                <span className="text-slate-100 font-medium">Rs {Number(p.price).toFixed(2)}</span>
-                <span className="text-slate-400">Stock: {p.stock}</span>
-              </div>
+            <div className="flex flex-col">
+  <span className="text-slate-100 font-medium">
+    Rs {Number(p.sale_price ?? 0).toFixed(2)}
+  </span>
+
+  {p.original_price && p.original_price > p.sale_price && (
+    <span className="text-xs text-slate-400 line-through">
+      Rs {Number(p.original_price).toFixed(2)}
+    </span>
+  )}
+</div>
 
               <div className="flex gap-2 mt-3">
                 <button
