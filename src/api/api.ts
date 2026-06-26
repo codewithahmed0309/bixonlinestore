@@ -6,11 +6,18 @@ export interface Product {
   id: string;
   name: string;
   description?: string;
-  price: number;
+
+  // NEW PRICE SYSTEM
+  original_price: number;
+  sale_price: number;
+
   stock: number;
+
   brand?: string;
   category?: string;
-  image?: string;
+
+  // MULTI IMAGE SUPPORT
+  images?: string[];
 }
 
 export interface Admin {
@@ -29,6 +36,7 @@ export interface ApiErrorShape {
   status?: number;
 }
 
+/* API RESPONSE */
 export interface ProductsListResponse {
   data: Product[];
 }
@@ -56,7 +64,7 @@ const api = axios.create({
   timeout: 20000,
 });
 
-/* ---------------- REQUEST DEBUG (IMPORTANT) ---------------- */
+/* ---------------- REQUEST DEBUG ---------------- */
 
 api.interceptors.request.use((config) => {
   const token = tokenStorage.get();
@@ -98,6 +106,7 @@ api.interceptors.response.use(
 );
 
 /* ---------------- AUTH API ---------------- */
+
 export const authApi = {
   login: (data: LoginPayload) => api.post("/auth/login", data),
 };
@@ -107,16 +116,25 @@ export const authApi = {
 export const productsApi = {
   list: () => api.get<ProductsListResponse>("/products"),
 
-  get: (id: string) => api.get<{ data: Product }>(`/products/${id}`),
+  get: (id: string) =>
+    api.get<{ data: Product }>(`/products/${id}`),
 
   create: (formData: FormData) =>
-    api.post<{ message: string; data: Product }>("/products/create", formData),
+    api.post<{ message: string; data: Product }>(
+      "/products/create",
+      formData
+    ),
 
   update: (id: string, formData: FormData) =>
-    api.put<{ message: string; data: Product }>(`/products/${id}`, formData),
+    api.put<{ message: string; data: Product }>(
+      `/products/${id}`,
+      formData
+    ),
 
   remove: (id: string) =>
-    api.delete<{ message: string; data: Product }>(`/products/${id}`),
+    api.delete<{ message: string; data: Product }>(
+      `/products/${id}`
+    ),
 };
 
 export default api;
