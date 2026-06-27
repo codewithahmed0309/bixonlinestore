@@ -15,7 +15,7 @@ export interface Product {
 
   brand?: string;
   category?: string;
-
+  unit?: string;        
   // MULTI IMAGE SUPPORT
   images?: string[];
 }
