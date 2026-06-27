@@ -82,13 +82,15 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
             )}
           </div>
 
-          <span
-            className={`text-xs font-medium ${
-              inStock ? "text-yellow-600" : "text-rose-500"
-            }`}
-          >
-            {inStock ? `${product.stock} in stock` : "Out of stock"}
-          </span>
+        <span
+  className={`text-xs font-medium ${
+    inStock ? "text-yellow-600" : "text-rose-500"
+  }`}
+>
+  {inStock
+    ? `${product.stock} ${product.unit || ""} in stock`
+    : "Out of stock"}
+</span>
         </div>
 
         {/* ACTIONS */}
