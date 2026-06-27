@@ -45,6 +45,7 @@ export const createProduct = async (req, res) => {
       original_price,
       sale_price,
       stock,
+       unit,   
     } = req.body;
 
     /* ---------- Validation ---------- */
