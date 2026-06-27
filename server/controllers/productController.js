@@ -109,18 +109,16 @@ export const createProduct = async (req, res) => {
 
     /* ---------- Save Product ---------- */
 
-    const productData = {
-      name: name.trim(),
-      brand: brand?.trim() || null,
-      category: category?.trim() || null,
-
-      original_price: Number(original_price),
-      sale_price: Number(sale_price),
-
-      stock: Number(stock),
-
-      images: imageUrls,
-    };
+   const productData = {
+  name: name.trim(),
+  brand: brand?.trim() || null,
+  category: category?.trim() || null,
+  original_price: Number(original_price),
+  sale_price: Number(sale_price),
+  stock: Number(stock),
+  unit: unit?.trim() || "pcs",   // 🔥 ADD THIS
+  images: imageUrls,
+};
 
     const { data: product, error } = await supabase
       .from("products")
@@ -192,15 +190,16 @@ export const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const {
-      name,
-      brand,
-      category,
-      original_price,
-      sale_price,
-      stock,
-      removedImages, // 🔥 NEW: optional JSON-stringified array of image URLs to remove
-    } = req.body;
+   const {
+  name,
+  brand,
+  category,
+  original_price,
+  sale_price,
+  stock,
+  unit,          
+  removedImages,
+} = req.body;
 
     /* ---------- Get Existing Product ---------- */
 
@@ -318,7 +317,10 @@ export const updateProduct = async (req, res) => {
         stock !== undefined
           ? Number(stock)
           : existingProduct.stock,
-
+  unit:                              // 🔥 ADD THIS
+    unit !== undefined
+      ? unit.trim()
+      : existingProduct.unit,
       images: imageUrls,
     };
 
