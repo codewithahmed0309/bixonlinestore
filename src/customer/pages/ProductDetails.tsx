@@ -217,7 +217,13 @@ const ProductDetails: React.FC = () => {
           >
             {inStock ? `${product.stock} in stock` : "Out of stock"}
           </p>
-
+<p
+  className={`mt-2 text-sm font-medium ${
+    inStock ? "text-yellow-600" : "text-rose-500"
+  }`}
+>
+  {inStock ? `${product.stock} ${product.unit || ""} in stock` : "Out of stock"}
+</p>
           {product.description && (
             <p className="mt-5 text-sm leading-relaxed text-slate-600">
               {product.description}
