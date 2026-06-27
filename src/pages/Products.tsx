@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useProducts } from "../contexts/ProductsContext";
 import { categoriesApi, Category } from "../api/CategoryApi"; // 🔥 separate file — adjust path to wherever you save it
+
 type FormState = {
   name: string;
   brand: string;
@@ -8,8 +9,11 @@ type FormState = {
   original_price: string;
   sale_price: string;
   stock: string;
+  unit: string; // 🔥 NEW
   images: File[];
 };
+
+const UNIT_OPTIONS = ["pcs", "kg", "g", "ltr", "ml", "box", "pack", "dozen", "set"]; // 🔥 NEW
 
 const emptyForm: FormState = {
   name: "",
@@ -18,6 +22,7 @@ const emptyForm: FormState = {
   original_price: "",
   sale_price: "",
   stock: "",
+  unit: "pcs", // 🔥 NEW
   images: [],
 };
 
@@ -52,9 +57,6 @@ const Products: React.FC = () => {
 
   /* =========================================================
      🔥 CATEGORY MANAGEMENT ADDITIONS — API CALLS
-     (Self-contained fetch calls so nothing in ProductsContext
-      has to be touched. Can be migrated into a CategoriesContext
-      later if you want, see chat notes.)
   ========================================================= */
   const fetchCategories = async () => {
     setCategoriesLoading(true);
@@ -101,11 +103,11 @@ const Products: React.FC = () => {
     try {
       setCategories((prev) => prev.filter((c) => c.id !== id));
 
-try {
-  await categoriesApi.remove(id);
-} catch (err) {
-  await fetchCategories(); // rollback sync
-}
+      try {
+        await categoriesApi.remove(id);
+      } catch (err) {
+        await fetchCategories(); // rollback sync
+      }
       setSuccessMessage("Category deleted successfully!");
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err: any) {
@@ -129,13 +131,6 @@ try {
     [products]
   );
 
-  /* =========================================================
-     🔥 CATEGORY MANAGEMENT ADDITIONS — MERGE WITH EXISTING
-     Original categoryOptions (derived from products) is kept
-     exactly as-is and merged with the fetched category list so
-     the filter dropdown still works even if a product has a
-     category that hasn't (yet) been formally registered.
-  ========================================================= */
   const categoryOptions = useMemo(
     () => [...new Set(products.map((p) => p.category).filter(Boolean))].sort() as string[],
     [products]
@@ -155,53 +150,57 @@ try {
   };
 
   const validateForm = (): string | null => {
-  if (!form.name.trim()) return "Product name is required.";
+    if (!form.name.trim()) return "Product name is required.";
 
-  if (
-    !form.original_price ||
-    isNaN(Number(form.original_price)) ||
-    Number(form.original_price) <= 0
-  )
-    return "Enter a valid original price greater than 0.";
+    if (
+      !form.original_price ||
+      isNaN(Number(form.original_price)) ||
+      Number(form.original_price) <= 0
+    )
+      return "Enter a valid original price greater than 0.";
 
-  if (
-    !form.sale_price ||
-    isNaN(Number(form.sale_price)) ||
-    Number(form.sale_price) <= 0
-  )
-    return "Enter a valid sale price greater than 0.";
+    if (
+      !form.sale_price ||
+      isNaN(Number(form.sale_price)) ||
+      Number(form.sale_price) <= 0
+    )
+      return "Enter a valid sale price greater than 0.";
 
-  if (Number(form.sale_price) > Number(form.original_price)) {
-    return "Sale price cannot be greater than original price.";
-  }
+    if (Number(form.sale_price) > Number(form.original_price)) {
+      return "Sale price cannot be greater than original price.";
+    }
 
-  if (!form.stock || isNaN(Number(form.stock)) || Number(form.stock) < 0)
-    return "Enter a valid stock count (0 or more).";
+    if (!form.stock || isNaN(Number(form.stock)) || Number(form.stock) < 0)
+      return "Enter a valid stock count (0 or more).";
 
-  if (form.images.some((file) => file.size > 3 * 1024 * 1024))
-    return "Each image must be under 3MB.";
+    if (!form.unit.trim()) return "Please select a unit."; // 🔥 NEW
 
-  return null;
-};
-const buildFormData = (): FormData => {
-  const data = new FormData();
+    if (form.images.some((file) => file.size > 3 * 1024 * 1024))
+      return "Each image must be under 3MB.";
 
-  data.append("name", form.name.trim());
-  data.append("brand", form.brand.trim() || "");
-  data.append("category", form.category.trim() || "");
-  data.append("original_price", form.original_price);
-  data.append("sale_price", form.sale_price);
-  data.append("stock", String(Number(form.stock)));
+    return null;
+  };
 
-  // ✅ ONLY SEND IF USER SELECTED NEW IMAGES
-  if (form.images.length > 0) {
-    form.images.forEach((file) => {
-      data.append("images", file);
-    });
-  }
+  const buildFormData = (): FormData => {
+    const data = new FormData();
 
-  return data;
-};
+    data.append("name", form.name.trim());
+    data.append("brand", form.brand.trim() || "");
+    data.append("category", form.category.trim() || "");
+    data.append("original_price", form.original_price);
+    data.append("sale_price", form.sale_price);
+    data.append("stock", String(Number(form.stock)));
+    data.append("unit", form.unit.trim() || "pcs"); // 🔥 NEW
+
+    // ✅ ONLY SEND IF USER SELECTED NEW IMAGES
+    if (form.images.length > 0) {
+      form.images.forEach((file) => {
+        data.append("images", file);
+      });
+    }
+
+    return data;
+  };
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -252,6 +251,7 @@ const buildFormData = (): FormData => {
       original_price: originalPrice,
       sale_price: salePrice,
       stock: String(product.stock ?? ""),
+      unit: (product as any).unit || "pcs", // 🔥 NEW
       images: [],
     });
     setShowForm(true);
@@ -310,7 +310,7 @@ const buildFormData = (): FormData => {
             + Add Product
           </button>
 
-          {/* 🔥 NEW: Add Category — same sizing/shape pattern as Add Product, different accent color */}
+          {/* 🔥 NEW: Add Category */}
           <button
             type="button"
             onClick={() => {
@@ -324,7 +324,7 @@ const buildFormData = (): FormData => {
             + Add Category
           </button>
 
-          {/* 🔥 NEW: Delete Category — opens a picker/delete modal */}
+          {/* 🔥 NEW: Delete Category */}
           <button
             type="button"
             onClick={() => {
@@ -340,7 +340,7 @@ const buildFormData = (): FormData => {
         </div>
       </div>
 
-      {/* FILTER BAR — stacks on mobile, row on larger screens */}
+      {/* FILTER BAR */}
       <div className="flex flex-col sm:flex-row gap-2">
         <input
           value={query}
@@ -364,7 +364,6 @@ const buildFormData = (): FormData => {
           className="rounded-lg bg-slate-900 border border-slate-700 px-3 py-2.5 text-sm text-slate-100"
         >
           <option value="">All categories</option>
-          {/* 🔥 UPDATED to use mergedCategoryOptions (products + API categories) instead of only categoryOptions */}
           {mergedCategoryOptions.map((category) => (
             <option key={category} value={category}>{category}</option>
           ))}
@@ -406,10 +405,6 @@ const buildFormData = (): FormData => {
             className="w-full p-3 bg-slate-800 border border-slate-700 rounded text-slate-100 placeholder-slate-500 focus:border-amber-500 focus:outline-none text-sm"
           />
 
-          {/* 🔥 UPDATED category field: dropdown sourced from categories API,
-              with a "custom" fallback that reveals the ORIGINAL text input
-              unchanged below it. Nothing from before was removed — the
-              plain text input still exists and still works the same way. */}
           {!useCustomCategory ? (
             <select
               value={form.category}
@@ -455,64 +450,77 @@ const buildFormData = (): FormData => {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="grid grid-cols-2 gap-3">
-  <input
-    type="number"
-    placeholder="Original Price *"
-    value={form.original_price}
-    onChange={(e) =>
-      setForm({ ...form, original_price: e.target.value })
-    }
-    min="0"
-    step="0.01"
-    className="w-full p-3 bg-slate-800 border border-slate-700 rounded text-slate-100 text-sm"
-  />
+              <input
+                type="number"
+                placeholder="Original Price *"
+                value={form.original_price}
+                onChange={(e) =>
+                  setForm({ ...form, original_price: e.target.value })
+                }
+                min="0"
+                step="0.01"
+                className="w-full p-3 bg-slate-800 border border-slate-700 rounded text-slate-100 text-sm"
+              />
 
-  <input
-    type="number"
-    placeholder="Sale Price *"
-    value={form.sale_price}
-    onChange={(e) =>
-      setForm({ ...form, sale_price: e.target.value })
-    }
-    min="0"
-    step="0.01"
-    className="w-full p-3 bg-slate-800 border border-slate-700 rounded text-slate-100 text-sm"
-  />
-</div>
-            <input
-              type="number"
-              placeholder="Stock *"
-              value={form.stock}
-              onChange={(e) => setForm({ ...form, stock: e.target.value })}
-              min="0"
-              className="w-full p-3 bg-slate-800 border border-slate-700 rounded text-slate-100 placeholder-slate-500 focus:border-amber-500 focus:outline-none text-sm"
-            />
+              <input
+                type="number"
+                placeholder="Sale Price *"
+                value={form.sale_price}
+                onChange={(e) =>
+                  setForm({ ...form, sale_price: e.target.value })
+                }
+                min="0"
+                step="0.01"
+                className="w-full p-3 bg-slate-800 border border-slate-700 rounded text-slate-100 text-sm"
+              />
+            </div>
+
+            {/* 🔥 NEW: Stock + Unit side by side, replacing the lone Stock input */}
+            <div className="grid grid-cols-2 gap-3">
+              <input
+                type="number"
+                placeholder="Stock *"
+                value={form.stock}
+                onChange={(e) => setForm({ ...form, stock: e.target.value })}
+                min="0"
+                className="w-full p-3 bg-slate-800 border border-slate-700 rounded text-slate-100 placeholder-slate-500 focus:border-amber-500 focus:outline-none text-sm"
+              />
+              <select
+                value={form.unit}
+                onChange={(e) => setForm({ ...form, unit: e.target.value })}
+                className="w-full p-3 bg-slate-800 border border-slate-700 rounded text-slate-100 focus:border-amber-500 focus:outline-none text-sm"
+              >
+                {UNIT_OPTIONS.map((u) => (
+                  <option key={u} value={u}>{u}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <label className="border-2 border-dashed border-slate-600 rounded-lg flex flex-col items-center justify-center p-4 cursor-pointer text-slate-400 hover:border-amber-500 transition">
             <input
-  type="file"
-  accept="image/png, image/jpeg"
-  multiple
-  className="hidden"
-  onChange={(e) =>
-    setForm({
-      ...form,
-      images: Array.from(e.target.files || []),
-    })
-  }
-/>
+              type="file"
+              accept="image/png, image/jpeg"
+              multiple
+              className="hidden"
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  images: Array.from(e.target.files || []),
+                })
+              }
+            />
             <span className="text-lg">📤</span>
             <span className="mt-1 text-sm font-medium">
               {editingId ? "Add Image (optional)" : "Upload Image"}
             </span>
-           {form.images.length > 0 ? (
-  <div className="text-xs mt-1 text-green-400">
-    ✓ {form.images.length} image(s) selected
-  </div>
-) : (
-  <span className="text-xs mt-1">PNG, JPG (max 3MB each)</span>
-)}
+            {form.images.length > 0 ? (
+              <div className="text-xs mt-1 text-green-400">
+                ✓ {form.images.length} image(s) selected
+              </div>
+            ) : (
+              <span className="text-xs mt-1">PNG, JPG (max 3MB each)</span>
+            )}
           </label>
 
           <div className="flex flex-col sm:flex-row gap-2 pt-2">
@@ -540,7 +548,7 @@ const buildFormData = (): FormData => {
       )}
 
       {/* =========================================================
-          🔥 NEW: ADD CATEGORY MODAL
+          🔥 ADD CATEGORY MODAL
       ========================================================= */}
       {showCategoryModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
@@ -584,8 +592,7 @@ const buildFormData = (): FormData => {
       )}
 
       {/* =========================================================
-          🔥 NEW: DELETE CATEGORY MODAL
-          (list categories, delete with confirm — no nested edit state needed)
+          🔥 DELETE CATEGORY MODAL
       ========================================================= */}
       {showDeleteCategoryModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
@@ -676,14 +683,17 @@ const buildFormData = (): FormData => {
                   <td className="px-5 py-3 text-slate-400">{p.category || "—"}</td>
                   <td className="px-5 py-3 text-right text-slate-100 font-medium">
                     <div className="text-right text-slate-100 font-medium">
-    
-  {typeof (p as any).original_price !== "undefined" && (p as any).original_price !== null && (
-    <div className="text-xs text-slate-500 line-through">
-      Rs {Number((p as any).original_price).toFixed(2)}
-    </div>
-  )}
-</div></td>
-                  <td className="px-5 py-3 text-right text-slate-100">{p.stock}</td>
+                      {typeof (p as any).original_price !== "undefined" && (p as any).original_price !== null && (
+                        <div className="text-xs text-slate-500 line-through">
+                          Rs {Number((p as any).original_price).toFixed(2)}
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                  {/* 🔥 UPDATED: show unit next to stock count */}
+                  <td className="px-5 py-3 text-right text-slate-100">
+                    {p.stock} {(p as any).unit ? <span className="text-slate-500">{(p as any).unit}</span> : null}
+                  </td>
                   <td className="px-5 py-3 text-right">
                     <div className="flex justify-end gap-2">
                       <button onClick={() => handleEdit(p)} className="px-2 py-1 text-xs rounded bg-slate-800 text-slate-200 hover:bg-slate-700">Edit</button>
@@ -718,23 +728,29 @@ const buildFormData = (): FormData => {
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="text-slate-100 font-medium truncate">{p.name}</p>
+                  {/* 🔥 UPDATED: show unit alongside brand/category */}
                   <p className="text-xs text-slate-500 mt-0.5">
-                    {p.brand || "—"} {p.category ? `· ${p.category}` : ""}
+                    {p.brand || "—"} {p.category ? `· ${p.category}` : ""} {(p as any).unit ? `· per ${(p as any).unit}` : ""}
                   </p>
                 </div>
               </div>
 
-            <div className="flex flex-col">
-  <span className="text-slate-100 font-medium">
-    Rs {Number(p.sale_price ?? 0).toFixed(2)}
-  </span>
+              <div className="flex flex-col">
+                <span className="text-slate-100 font-medium">
+                  Rs {Number(p.sale_price ?? 0).toFixed(2)}
+                </span>
 
-  {p.original_price && p.original_price > p.sale_price && (
-    <span className="text-xs text-slate-400 line-through">
-      Rs {Number(p.original_price).toFixed(2)}
-    </span>
-  )}
-</div>
+                {p.original_price && p.original_price > p.sale_price && (
+                  <span className="text-xs text-slate-400 line-through">
+                    Rs {Number(p.original_price).toFixed(2)}
+                  </span>
+                )}
+              </div>
+
+              {/* 🔥 NEW: stock + unit line on mobile cards */}
+              <p className="text-xs text-slate-500 mt-1">
+                {p.stock} {(p as any).unit || ""} in stock
+              </p>
 
               <div className="flex gap-2 mt-3">
                 <button
